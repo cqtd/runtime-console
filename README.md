@@ -4,9 +4,14 @@
 하지만 다 자기가 필요한 것들을 중점으로 개발하기에 구매해 쓰기에는 애매합니다.
 몇몇 디버깅에 실용적인 기능들을 탑재하고 빌드하여 콘솔로 테스트해봅니다.
 
-`Scene/Console.unity`를 열고 플레이해보세요.  
-``` ` (Back Quote) ``` 키를 눌러 콘솔을 열어보세요.
-아래 테스트용 정적 함수를 호출해보세요
+![](https://github.com/cqtd/runtime-console/blob/master/Images/1.gif?raw=true)  
+
+![](https://github.com/cqtd/runtime-console/blob/master/Images/2.gif?raw=true)  
+
+### Example
+1. `Scene/Console.unity`를 열고 플레이해보세요.  
+2. ``` ` (Back Quote) ``` 키를 눌러 콘솔을 열어보세요.
+3. 아래 테스트용 정적 함수를 호출해보세요
 
 - SetMaxFPS integer
 - ToggleVolumes
@@ -14,6 +19,9 @@
 - Quit
 - Exit
 - ForceGC
+
+### tip
+```C# RuntimeConsole.Console.LoadConsole()``` 메서드로 콘솔 서브씬을 로드할 수도 있습니다.
 
 ### 구현
 Reflection 사용
