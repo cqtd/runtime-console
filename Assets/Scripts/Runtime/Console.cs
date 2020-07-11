@@ -25,6 +25,7 @@ namespace RuntimeConsole
 		[SerializeField] Canvas canvas = default;
 
 		[Header("Setting")]
+		[SerializeField] string[] m_assemblies = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
 		[SerializeField] string[] m_namespaces = new string[] {"RuntimeConsole.Command"};
 		[SerializeField] KeyCode activationKey = KeyCode.BackQuote;
 		
@@ -85,17 +86,42 @@ namespace RuntimeConsole
 
 		#region INIT
 
+		[ContextMenu("Get Target Assembly")]
+		void GetTargetAssembly()
+		{
+			var assemblies = FindTypes();
+			
+			foreach (var assembly in assemblies)
+				Debug.Log(assembly);
+		}
+
+		List<Type> FindTypes()
+		{
+			var list = new List<Type>();
+			
+			var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+				.Where(t => m_assemblies.Contains(t.GetName().Name));
+			
+			foreach (var assembly in assemblies)
+			{
+				Debug.Log($"[Found Assembly]::{assembly.GetName().Name}");
+				
+				list.AddRange(
+					assembly
+						.GetTypes()
+						.Where(t => m_namespaces.Contains(t.Namespace)));
+			}
+
+			return list;
+		}
+
 		/// <summary>
 		/// 메서드 데이터로 미리 맵을 만듭니다.
-		/// @TODO :: 어셈블리별 필터링 구현
 		/// </summary>
 		void InitMethods()
 		{
-			List<Type> list = Assembly.GetExecutingAssembly()
-				.GetTypes()
-				.Where(t => m_namespaces.Contains(t.Namespace))
-				.ToList();
-
+			var list = FindTypes();
+			
 			foreach (Type type in list)
 			{
 				var methodInfos = type.GetMethods()
@@ -119,7 +145,7 @@ namespace RuntimeConsole
 			cellPrefab.gameObject.SetActive(false);
 			
 			DontDestroyOnLoad(gameObject);
-			DontDestroyOnLoad(canvas.gameObject);
+			// DontDestroyOnLoad(canvas.gameObject);
 			DontDestroyOnLoad(EventSystem.current.gameObject);
 		}
 		
