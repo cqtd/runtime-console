@@ -16,7 +16,6 @@ namespace RuntimeConsole
 		// Cache used commands
 		// TextMeshPro Implementation
 		// New Input System Implementation
-		// Filter by Assembly
 		
 		[Header("Component")]
 		[SerializeField] InputField inputField = default;
@@ -25,7 +24,9 @@ namespace RuntimeConsole
 		[SerializeField] Canvas canvas = default;
 
 		[Header("Setting")]
+		[Tooltip("whitelist of assembly")]
 		[SerializeField] string[] m_assemblies = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
+		[Tooltip("whitelist of namespace")]
 		[SerializeField] string[] m_namespaces = new string[] {"RuntimeConsole.Command"};
 		[SerializeField] KeyCode activationKey = KeyCode.BackQuote;
 		
@@ -82,7 +83,13 @@ namespace RuntimeConsole
 				}
 			}
 		}
-#endregion
+
+		void OnValidate()
+		{
+			
+		}
+
+		#endregion
 
 		#region INIT
 
@@ -312,6 +319,26 @@ namespace RuntimeConsole
 
 			return instance;
 		}
+
+#if UNITY_EDITOR
+		[ContextMenu("Find Components")]
+		void FindComponents()
+		{
+			if (inputField == null)
+				inputField = GetComponentInChildren<InputField>();
+
+			if (cellPrefab == null)
+				cellPrefab = GetComponentsInChildren<Text>().FirstOrDefault(e => e.name == "TextPool");
+
+			if (root == null)
+				root = transform.GetChild(0) as RectTransform;
+
+			if (canvas == null)
+				canvas = GetComponentInChildren<Canvas>();
+
+			UnityEditor.EditorUtility.DisplayDialog("Done!", "Components are found. save the scene or prefab.", "OK");
+		}
+#endif
 		
 		#endregion
 
