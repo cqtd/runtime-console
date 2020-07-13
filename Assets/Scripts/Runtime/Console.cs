@@ -17,17 +17,29 @@ namespace RuntimeConsole
 		// TextMeshPro Implementation
 		// New Input System Implementation
 		
+		public enum EFilterType {
+			WhiteList = 0,
+			BlackList = 1,
+		}
+
 		[Header("Component")]
 		[SerializeField] InputField inputField = default;
 		[SerializeField] Text cellPrefab = default;
 		[SerializeField] RectTransform root = default;
 		[SerializeField] Canvas canvas = default;
 
-		[Header("Setting")]
+		// [Header("Setting")]
+		[SerializeField] EFilterType assemblyFilterType = EFilterType.WhiteList;
 		[Tooltip("whitelist of assembly")]
-		[SerializeField] string[] m_assemblies = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
+		[SerializeField] string[] m_assemblyWhitelist = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
+		[Tooltip("blacklist of assembly")]
+		[SerializeField] string[] m_assemblyBlacklist = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
+		
+		[SerializeField] EFilterType namespaceFilterType = EFilterType.WhiteList;
 		[Tooltip("whitelist of namespace")]
-		[SerializeField] string[] m_namespaces = new string[] {"RuntimeConsole.Command"};
+		[SerializeField] string[] m_namespaceWhitelist = new string[] {"RuntimeConsole.Command"};
+		[Tooltip("blacklist of namespace")]
+		[SerializeField] string[] m_namespaceBlacklist = new string[] {"RuntimeConsole.Command"};
 		[SerializeField] KeyCode activationKey = KeyCode.BackQuote;
 		
 		readonly List<Text> cells = new List<Text>();
@@ -107,7 +119,16 @@ namespace RuntimeConsole
 			var list = new List<Type>();
 			
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-				.Where(t => m_assemblies.Contains(t.GetName().Name));
+				.Where(t => { 
+					switch(assemblyFilterType) {
+						case EFilterType.WhiteList:
+							return m_assemblyWhitelist.Contains(t.GetName().Name);
+						case EFilterType.BlackList:
+							return !m_assemblyBlacklist.Contains(t.GetName().Name);
+						default:
+							return false;
+					}
+				});
 			
 			foreach (var assembly in assemblies)
 			{
@@ -116,7 +137,19 @@ namespace RuntimeConsole
 				list.AddRange(
 					assembly
 						.GetTypes()
-						.Where(t => m_namespaces.Contains(t.Namespace)));
+						.Where(t =>
+						{
+							switch(namespaceFilterType) {
+								case EFilterType.WhiteList:
+									return m_namespaceWhitelist.Contains(t.Namespace);
+								case EFilterType.BlackList:
+									return !m_namespaceBlacklist.Contains(t.Namespace);
+								default:
+									return false;
+							}
+						}
+					)
+				);
 			}
 
 			return list;
@@ -322,7 +355,7 @@ namespace RuntimeConsole
 
 #if UNITY_EDITOR
 		[ContextMenu("Find Components")]
-		void FindComponents()
+		public void FindComponents()
 		{
 			if (inputField == null)
 				inputField = GetComponentInChildren<InputField>();
@@ -384,7 +417,7 @@ namespace RuntimeConsole
 		}
 		
 #if UNITY_EDITOR
-		[UnityEditor.MenuItem("Tools/Console/Add SubScene")]
+		[UnityEditor.MenuItem("Tools/Console/Add SubScene To Build Settings")]
 #endif
 		static void RegisterSceneToBuildSetting()
 		{
