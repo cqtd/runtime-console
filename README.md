@@ -8,7 +8,7 @@
 
 ![](https://github.com/cqtd/runtime-console/blob/master/Images/2.gif?raw=true)  
 
-### Example
+## Example
 1. `Scene/Console.unity`를 열고 플레이해보세요.  
 2. ``` ` (Back Quote) ``` 키를 눌러 콘솔을 열어보세요.
 3. 아래 테스트용 정적 함수를 호출해보세요
@@ -16,11 +16,9 @@
 - SetMaxFPS integer
 - ToggleVolumes
 - ToggleMemory
-- Quit
-- Exit
-- ForceGC
+- Quit, Exit
 
-### tip
+## API
 ```C# RuntimeConsole.Console.LoadConsole()``` 메서드로 콘솔 서브씬을 로드할 수도 있습니다.
 
 ### 구현

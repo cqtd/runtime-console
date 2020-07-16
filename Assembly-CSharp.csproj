@@ -61,6 +61,7 @@
      <Compile Include="Assets\Scripts\Runtime\Console.cs" />
      <Compile Include="Assets\Scripts\Runtime\ConsoleCommand.cs" />
      <Compile Include="Assets\Scripts\Runtime\MethodComparer.cs" />
+     <Compile Include="Assets\Scripts\Runtime\UnityMethodInfoEvent.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Github/Console/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
  </Reference>

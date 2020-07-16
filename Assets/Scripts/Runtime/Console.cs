@@ -46,14 +46,21 @@ namespace RuntimeConsole
 		readonly Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
 		readonly Dictionary<string, Type> methodOwnerMap = new Dictionary<string, Type>();
 
+		UnityMethodInfoEvent onExecuteMethod = new UnityMethodInfoEvent();
+
 		MethodInfo selected = default;
 		bool activated = default;
+
+		bool upArrowIsDown = false;
+		bool downArrowIsDown = false;
 		
 		#region UNITY_EVENT_FUNCTION
 		void Awake()
 		{
 			InitMethods();
 			InitComponents();
+			
+			onExecuteMethod.AddListener(CacheMethodInfo);
 			
 			OnActivationChanged();
 		}
@@ -86,12 +93,34 @@ namespace RuntimeConsole
 
 				if (Input.GetKeyDown(KeyCode.UpArrow))
 				{
-					// @TODO : 이전 사용한 커맨드 기억 
+					upArrowIsDown = true;
+				}
+
+				if (Input.GetKeyUp(KeyCode.UpArrow))
+				{
+					upArrowIsDown = false;
 				}
 
 				if (Input.GetKeyDown(KeyCode.DownArrow))
 				{
+					downArrowIsDown = true;
+				}
+
+				if (Input.GetKeyUp(KeyCode.DownArrow))
+				{
+					downArrowIsDown = false;
+				}
+
+				if (upArrowIsDown)
+				{
+					// @TODO : 이전 사용한 커맨드 기억 
+					Debug.Log("Up");
+				}
+
+				if (downArrowIsDown)
+				{
 					// @TODO : 이전 사용한 커맨드 기억
+					Debug.Log("Down");
 				}
 			}
 		}
@@ -311,6 +340,7 @@ namespace RuntimeConsole
 
 					// 메서드 컨슘
 					selected.Invoke(classInstance, convertedParameters);
+					onExecuteMethod?.Invoke(selected);
 				}
 				catch (Exception e)
 				{
@@ -326,6 +356,18 @@ namespace RuntimeConsole
 			inputField.text = null;
 			inputField.Select();
 			inputField.ActivateInputField();
+		}
+
+		const string prefKey = "runtime-console.pref.key";
+		void CacheMethodInfo(MethodInfo mi)
+		{
+			var json = PlayerPrefs.GetString(prefKey, null);
+			if (json == null)
+			{
+				json = JsonUtility.ToJson(new List<string>());
+			}
+			
+			// work in progress...
 		}
 
 		#endregion
