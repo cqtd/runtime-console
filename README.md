@@ -25,11 +25,10 @@
 Reflection 사용
 
 ### 버전, 변경점
-**v1.1.2**  
+**v1.1.3**  
 [CHANGELOG.md](https://github.com/cqtd/runtime-console/blob/master/CHANGELOG.md)
 
 ### To do list
-- Cache used commands
 - TextMeshPro Implementation
 - New Input System Implementation
 - For Class Instances

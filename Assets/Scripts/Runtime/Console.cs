@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -13,7 +14,6 @@ namespace RuntimeConsole
 	public class Console : MonoBehaviour
 	{
 		// @TODO FEATURES :: 
-		// Cache used commands
 		// TextMeshPro Implementation
 		// New Input System Implementation
 		
@@ -22,13 +22,15 @@ namespace RuntimeConsole
 			BlackList = 1,
 		}
 
+		#region Component
 		[Header("Component")]
 		[SerializeField] InputField inputField = default;
 		[SerializeField] Text cellPrefab = default;
 		[SerializeField] RectTransform root = default;
 		[SerializeField] Canvas canvas = default;
+		#endregion
 
-		// [Header("Setting")]
+		#region Filter
 		[SerializeField] EFilterType assemblyFilterType = EFilterType.WhiteList;
 		[Tooltip("whitelist of assembly")]
 		[SerializeField] string[] m_assemblyWhitelist = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
@@ -40,19 +42,29 @@ namespace RuntimeConsole
 		[SerializeField] string[] m_namespaceWhitelist = new string[] {"RuntimeConsole.Command"};
 		[Tooltip("blacklist of namespace")]
 		[SerializeField] string[] m_namespaceBlacklist = new string[] {"RuntimeConsole.Command"};
+		#endregion
+
+		#region Preference
 		[SerializeField] KeyCode activationKey = KeyCode.BackQuote;
-		
+		#endregion
+
+		#region Dictionaries
 		readonly List<Text> cells = new List<Text>();
 		readonly Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
 		readonly Dictionary<string, Type> methodOwnerMap = new Dictionary<string, Type>();
+		#endregion
 
-		UnityMethodInfoEvent onExecuteMethod = new UnityMethodInfoEvent();
-
+		#region Internal
 		MethodInfo selected = default;
 		bool activated = default;
 
 		bool upArrowIsDown = false;
 		bool downArrowIsDown = false;
+
+		int currentIndex = -1;
+		
+		readonly UnityMethodInfoEvent onExecuteMethod = new UnityMethodInfoEvent();
+		#endregion
 		
 		#region UNITY_EVENT_FUNCTION
 		void Awake()
@@ -91,9 +103,25 @@ namespace RuntimeConsole
 					}
 				}
 
+
 				if (Input.GetKeyDown(KeyCode.UpArrow))
 				{
-					upArrowIsDown = true;
+					if (!upArrowIsDown)
+					{
+						upArrowIsDown = true;
+						int count = GetCachedMethodInfoCount();
+
+						if (count > 0)
+						{
+							currentIndex = (currentIndex + 1) % count;
+							Debug.Log("Up");
+
+							inputField.text = GetCachedMethodInfoByIndex(currentIndex);
+							inputField.caretPosition = inputField.text.Length;
+							inputField.Select();
+							inputField.ActivateInputField();
+						}
+					}
 				}
 
 				if (Input.GetKeyUp(KeyCode.UpArrow))
@@ -103,7 +131,31 @@ namespace RuntimeConsole
 
 				if (Input.GetKeyDown(KeyCode.DownArrow))
 				{
-					downArrowIsDown = true;
+					if (!downArrowIsDown)
+					{
+						downArrowIsDown = true;
+						int count = GetCachedMethodInfoCount();
+
+						if (count > 0)
+						{
+							if (currentIndex < 0)
+							{
+								currentIndex %= count;
+							}
+							else
+							{
+								currentIndex = (currentIndex - 1 + count) % count;
+							}
+					
+							// @TODO : 이전 사용한 커맨드 기억
+							Debug.Log("Down");
+					
+							inputField.text = GetCachedMethodInfoByIndex(currentIndex);
+							inputField.caretPosition = inputField.text.Length;
+							inputField.Select();
+							inputField.ActivateInputField();
+						}
+					}
 				}
 
 				if (Input.GetKeyUp(KeyCode.DownArrow))
@@ -111,17 +163,35 @@ namespace RuntimeConsole
 					downArrowIsDown = false;
 				}
 
-				if (upArrowIsDown)
-				{
-					// @TODO : 이전 사용한 커맨드 기억 
-					Debug.Log("Up");
-				}
 
-				if (downArrowIsDown)
-				{
-					// @TODO : 이전 사용한 커맨드 기억
-					Debug.Log("Down");
-				}
+				// if (upArrowIsDown)
+				// {
+				// 	currentIndex = (currentIndex + 1) % count; 
+				// 	Debug.Log("Up");
+				// }
+				//
+				// if (downArrowIsDown)
+				// {
+				// 	if (currentIndex < 0)
+				// 	{
+				// 		currentIndex %= count;
+				// 	}
+				// 	else
+				// 	{
+				// 		currentIndex = (currentIndex - 1 + count) % count;
+				// 	}
+				// 	
+				// 	// @TODO : 이전 사용한 커맨드 기억
+				// 	Debug.Log("Down");
+				// }
+				//
+				// if (upArrowIsDown || downArrowIsDown)
+				// {
+				// 	inputField.text = GetCachedMethodInfoByIndex(currentIndex);
+				// 	inputField.caretPosition = inputField.text.Length;
+				// 	inputField.Select();
+				// 	inputField.ActivateInputField();
+				// }
 			}
 		}
 
@@ -361,13 +431,50 @@ namespace RuntimeConsole
 		const string prefKey = "runtime-console.pref.key";
 		void CacheMethodInfo(MethodInfo mi)
 		{
-			var json = PlayerPrefs.GetString(prefKey, null);
-			if (json == null)
+			List<string> list = GetCachedMethodInfo();
+
+			if (list.Contains(mi.Name))
 			{
-				json = JsonUtility.ToJson(new List<string>());
+				list.Remove(mi.Name);
+				Debug.Log($"[CachedMethodInfo]::{mi.Name} has removed from list.");
 			}
 			
-			// work in progress...
+			list.Insert(0, mi.Name);
+			var serialized = JsonConvert.SerializeObject(list);
+
+			Debug.Log($"[CachedMethodInfo]::{mi.Name} has been cached. \n{serialized}");
+			PlayerPrefs.SetString(prefKey, serialized);
+			
+			currentIndex = -1;
+		}
+
+		int GetCachedMethodInfoCount()
+		{
+			return GetCachedMethodInfo().Count;
+		}
+
+		List<string> GetCachedMethodInfo()
+		{
+			string json = PlayerPrefs.GetString(prefKey, null);
+			if (string.IsNullOrEmpty(json))
+			{
+				return new List<string>()
+				{
+					"",
+				};
+			}
+
+			return JsonConvert.DeserializeObject<List<string>>(json);
+		}
+
+		string GetCachedMethodInfoByIndex(int index)
+		{
+			if (GetCachedMethodInfoCount() <= index)
+			{
+				return string.Empty;
+			}
+
+			return GetCachedMethodInfo()[index];
 		}
 
 		#endregion
@@ -414,7 +521,12 @@ namespace RuntimeConsole
 			UnityEditor.EditorUtility.DisplayDialog("Done!", "Components are found. save the scene or prefab.", "OK");
 		}
 #endif
-		
+
+		[ContextMenu("Clear Preference")]
+		public void ClearPreference()
+		{
+			PlayerPrefs.DeleteKey(prefKey);
+		}
 		#endregion
 
 		#region SCENE
