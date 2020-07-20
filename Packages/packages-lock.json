@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.cqtd.packagebuilder": {
+      "version": "https://github.com/cqtd/com.cqtd.packagebuilder.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "34e5bc9f9ac8a4bee524878bcfadd23176100f18"
+    },
     "com.unity.ext.nunit": {
       "version": "1.0.0",
       "depth": 2,

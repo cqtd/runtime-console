@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.cqtd.packagebuilder": "https://github.com/cqtd/com.cqtd.packagebuilder.git",
     "com.unity.ide.rider": "1.1.4",
     "com.unity.ugui": "1.0.0",
     "com.unity.modules.ai": "1.0.0",

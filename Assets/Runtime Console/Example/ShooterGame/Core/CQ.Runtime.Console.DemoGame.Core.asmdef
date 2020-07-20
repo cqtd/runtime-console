@@ -1,8 +1,6 @@
 {
-    "name": "ShooterGame.SDK",
-    "references": [
-        "GUID:7772d411b80e215cb8f55a3370950401"
-    ],
+    "name": "CQ.Runtime.Console.DemoGame.Core",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

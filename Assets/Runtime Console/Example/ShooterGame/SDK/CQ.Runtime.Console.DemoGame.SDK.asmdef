@@ -1,0 +1,15 @@
+{
+    "name": "CQ.Runtime.Console.DemoGame.SDK",
+    "references": [
+        "GUID:7772d411b80e215cb8f55a3370950401"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/ConsoleSubscene.unity
+    path: Assets/Runtime Console/Scenes/ConsoleSubscene.unity
     guid: 36a98d79a94de034a9547eedcf78dc8a
   m_configObjects: {}

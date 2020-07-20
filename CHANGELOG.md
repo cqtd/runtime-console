@@ -20,3 +20,7 @@ v1.1.2
 
 v1.1.3
 - 메서드 캐시 (Up, Down Arrow)
+- Json.Net 임포트 (Newton soft)
+
+v1.1.4
+- 패키지로 변경
