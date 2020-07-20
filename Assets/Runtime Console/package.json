@@ -1,5 +1,5 @@
 {
-  "name": "com.cq.runtime.console",
+  "name": "com.cqtd.runtime.console",
   "displayName": "Runtime Console",
   "version": "1.1.4",
   "type": "module"
