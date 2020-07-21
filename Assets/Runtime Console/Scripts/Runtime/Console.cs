@@ -6,11 +6,12 @@ using System.Reflection;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace RuntimeConsole
 {
+	using Context;
+	
 	public class Console : MonoBehaviour
 	{
 		// @TODO FEATURES :: 
@@ -23,7 +24,7 @@ namespace RuntimeConsole
 		}
 
 		#region Component
-		[Header("Component")]
+		[Header(Runtime.component)]
 		[SerializeField] InputField inputField = default;
 		[SerializeField] Text cellPrefab = default;
 		[SerializeField] RectTransform root = default;
@@ -32,15 +33,15 @@ namespace RuntimeConsole
 
 		#region Filter
 		[SerializeField] EFilterType assemblyFilterType = EFilterType.WhiteList;
-		[Tooltip("whitelist of assembly")]
+		[Tooltip(Runtime.whitelist_assembly)]
 		[SerializeField] string[] m_assemblyWhitelist = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
-		[Tooltip("blacklist of assembly")]
+		[Tooltip(Runtime.blacklist_assembly)]
 		[SerializeField] string[] m_assemblyBlacklist = new string[] {"Assembly-CSharp", "Assembly-CSharp-firstpass"};
 		
 		[SerializeField] EFilterType namespaceFilterType = EFilterType.WhiteList;
-		[Tooltip("whitelist of namespace")]
+		[Tooltip(Runtime.whitelist_namespace)]
 		[SerializeField] string[] m_namespaceWhitelist = new string[] {"RuntimeConsole.Command"};
-		[Tooltip("blacklist of namespace")]
+		[Tooltip(Runtime.blacklist_namespace)]
 		[SerializeField] string[] m_namespaceBlacklist = new string[] {"RuntimeConsole.Command"};
 		#endregion
 
@@ -162,36 +163,6 @@ namespace RuntimeConsole
 				{
 					downArrowIsDown = false;
 				}
-
-
-				// if (upArrowIsDown)
-				// {
-				// 	currentIndex = (currentIndex + 1) % count; 
-				// 	Debug.Log("Up");
-				// }
-				//
-				// if (downArrowIsDown)
-				// {
-				// 	if (currentIndex < 0)
-				// 	{
-				// 		currentIndex %= count;
-				// 	}
-				// 	else
-				// 	{
-				// 		currentIndex = (currentIndex - 1 + count) % count;
-				// 	}
-				// 	
-				// 	// @TODO : 이전 사용한 커맨드 기억
-				// 	Debug.Log("Down");
-				// }
-				//
-				// if (upArrowIsDown || downArrowIsDown)
-				// {
-				// 	inputField.text = GetCachedMethodInfoByIndex(currentIndex);
-				// 	inputField.caretPosition = inputField.text.Length;
-				// 	inputField.Select();
-				// 	inputField.ActivateInputField();
-				// }
 			}
 		}
 
@@ -204,7 +175,7 @@ namespace RuntimeConsole
 
 		#region INIT
 
-		[ContextMenu("Get Target Assembly")]
+		[ContextMenu(Runtime.context_menu_0)]
 		void GetTargetAssembly()
 		{
 			var assemblies = FindTypes();
@@ -284,7 +255,6 @@ namespace RuntimeConsole
 			cellPrefab.gameObject.SetActive(false);
 			
 			DontDestroyOnLoad(gameObject);
-			// DontDestroyOnLoad(canvas.gameObject);
 			DontDestroyOnLoad(EventSystem.current.gameObject);
 		}
 		
@@ -501,9 +471,12 @@ namespace RuntimeConsole
 
 			return instance;
 		}
+		#endregion
 
+		#region EDITOR
+		
 #if UNITY_EDITOR
-		[ContextMenu("Find Components")]
+		[ContextMenu(Runtime.context_menu_1)]
 		public void FindComponents()
 		{
 			if (inputField == null)
@@ -522,84 +495,11 @@ namespace RuntimeConsole
 		}
 #endif
 
-		[ContextMenu("Clear Preference")]
+		[ContextMenu(Runtime.context_menu_2)]
 		public void ClearPreference()
 		{
 			PlayerPrefs.DeleteKey(prefKey);
 		}
-		#endregion
-
-		#region SCENE
-
-		const string subsceneName = "ConsoleSubscene";
-		const string subscenePath = "Assets/Scenes/" + subsceneName + ".unity";
-
-		const string title = "빌드 세팅 오류";
-		const string msg = "빌드 세팅에 씬을 추가할까요?";
-
-		static bool loaded = false;
-		
-		#if UNITY_EDITOR
-		[UnityEditor.MenuItem("Tools/Console/Load SubScene")]
-		#endif
-		public static void LoadConsole()
-		{
-			if (loaded)
-			{
-				Debug.LogWarning("이미 로드되어 있습니다.");
-				return;
-			}
-			
-			#if UNITY_EDITOR
-			if (!HasRegistered())
-			{
-				bool add = UnityEditor.EditorUtility.DisplayDialog(title, msg, "추가", "아니요");
-				if (add)
-				{
-					RegisterSceneToBuildSetting();
-				}
-
-				UnityEditor.EditorUtility.DisplayDialog("알림",
-					add ? "추가하였습니다.\nPlay Mode를 재시작해주세요." : "씬을 추가하고 재시작 해주세요.", "확인");
-
-				return;
-			}
-			#endif
-
-			SceneManager.LoadScene(subsceneName, LoadSceneMode.Additive);
-			loaded = true;
-		}
-		
-#if UNITY_EDITOR
-		[UnityEditor.MenuItem("Tools/Console/Add SubScene To Build Settings")]
-#endif
-		static void RegisterSceneToBuildSetting()
-		{
-#if UNITY_EDITOR
-			var scenes = UnityEditor.EditorBuildSettings.scenes.ToList();
-			scenes.Add(new UnityEditor.EditorBuildSettingsScene(subscenePath, true));
-			UnityEditor.EditorBuildSettings.scenes = scenes.ToArray();
-#endif
-		}
-
-		static bool HasRegistered()
-		{
-#if UNITY_EDITOR
-			return UnityEditor.EditorBuildSettings.scenes.Any(e => e.path == subscenePath);
-#else
-			return true;
-#endif
-		}
-
-		/// <summary>
-		/// Fast Enter Play Mode 대응
-		/// </summary>
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-		static void ResetDomain()
-		{
-			loaded = false;
-		}
-
 		#endregion
 	}
 }

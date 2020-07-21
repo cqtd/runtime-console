@@ -24,3 +24,7 @@ v1.1.3
 
 v1.1.4
 - 패키지로 변경
+
+v1.1.5 
+- Language 서포트 (KR/EN)
+- Edit - Project Settings - Player - Other Settings - Script Define Symbol 에서 LANG_KR 추가
